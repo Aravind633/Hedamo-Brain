@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const newsreader = Newsreader({ subsets: ["latin"], variable: "--font-newsreader" });
 
 export const metadata: Metadata = {
-  title: "Memex | Second Brain",
+  title: "Cortex | Intelligent Memory",
   description: "AI-Powered Knowledge Management",
 };
 
