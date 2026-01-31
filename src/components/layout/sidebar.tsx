@@ -81,13 +81,12 @@
 //   );
 // }
 
-
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-// 1. Updated Import: Added 'Sparkles'
-import { LayoutGrid, Search, Plus, Settings, LogOut, Brain, Sparkles } from "lucide-react"; 
+// 1. Updated Import: Added 'BrainCircuit'
+import { LayoutGrid, Search, Plus, Settings, LogOut, Brain, Sparkles, BrainCircuit } from "lucide-react"; 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -103,11 +102,12 @@ export function Sidebar() {
     router.push("/login");
   }
 
-  // 2. Updated Links Array
+  // 2. Updated Links Array (Single consolidated list)
   const links = [
     { href: "/", label: "Dashboard", icon: LayoutGrid },
     { href: "/search", label: "Search", icon: Search },
-    { href: "/ask", label: "Ask Cortex", icon: Sparkles }, // ✨ New AI Feature
+    { href: "/ask", label: "Ask Cortex", icon: Sparkles },
+    { href: "/graph", label: "Graph View", icon: BrainCircuit }, // New!
     { href: "/notes/new", label: "New Note", icon: Plus },
   ];
 
