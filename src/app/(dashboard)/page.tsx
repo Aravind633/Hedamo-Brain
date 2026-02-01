@@ -1,14 +1,18 @@
-
 import { createClient } from "@/lib/supabase/server";
 import { GlassCard } from "@/components/ui/glass-card";
 import { DashboardFilters } from "@/components/dashboard/dashboard-filters";
 import { formatDate } from "@/lib/utils";
 import { 
-  FileText, Lightbulb, Code, Link as LinkIcon, ExternalLink, 
+  FileText, Lightbulb, Code, Link as LinkIcon, 
   Sparkles, Ghost, Brain, Activity, Zap, LogIn, Lock, Quote 
 } from "lucide-react";
 import Link from "next/link";
-import { FadeIn } from "@/components/ui/fade-in"; // 1. Import the wrapper
+import { FadeIn } from "@/components/ui/fade-in";
+
+// 1. Define the Note interface to resolve the TypeScript 'never' error
+interface Note {
+  type: string | null;
+}
 
 // 🎨 Styles Helper
 function getTypeStyles(type: string) {
@@ -40,13 +44,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-
   if (!user) {
     return (
-      // 2. Wrap Guest View with FadeIn
       <FadeIn className="space-y-12">
-        
-        {/* Top Header for Guests */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Brain className="text-neutral-900 dark:text-white" />
@@ -60,7 +60,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           </Link>
         </div>
 
-        {/* Hero Section */}
         <div className="text-center py-10 space-y-6 max-w-2xl mx-auto">
           <h1 className="text-5xl font-light tracking-tight text-neutral-900 dark:text-white">
             Your External <span className="font-semibold">Neural Network</span>.
@@ -83,70 +82,48 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           </div>
         </div>
 
-        {/* Demo Grid (Locked State) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 opacity-80">
-          <GlassCard className="p-6 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-neutral-100/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <Link href="/login" className="flex items-center gap-2 text-sm font-medium bg-white px-4 py-2 rounded-full shadow-sm">
-                <Lock size={14} /> Sign in to view
-              </Link>
-            </div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-yellow-100 text-yellow-600 rounded-full"><Lightbulb size={18}/></div>
-              <span className="text-xs font-bold text-neutral-400">IDEA</span>
-            </div>
-            <h3 className="font-semibold text-lg mb-2">App Architecture V2</h3>
-            <p className="text-sm text-neutral-500">Use Supabase for auth and vector embeddings for AI recall...</p>
-          </GlassCard>
-
-          <GlassCard className="p-6 relative overflow-hidden group">
-             <div className="absolute inset-0 bg-neutral-100/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <Link href="/login" className="flex items-center gap-2 text-sm font-medium bg-white px-4 py-2 rounded-full shadow-sm">
-                <Lock size={14} /> Sign in to view
-              </Link>
-            </div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-purple-100 text-purple-600 rounded-full"><Code size={18}/></div>
-              <span className="text-xs font-bold text-neutral-400">SNIPPET</span>
-            </div>
-            <h3 className="font-semibold text-lg mb-2">React Server Actions</h3>
-            <p className="text-sm text-neutral-500">Always validate formData before sending to DB. Code example included.</p>
-          </GlassCard>
-
-           <GlassCard className="p-6 relative overflow-hidden group">
-             <div className="absolute inset-0 bg-neutral-100/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <Link href="/login" className="flex items-center gap-2 text-sm font-medium bg-white px-4 py-2 rounded-full shadow-sm">
-                <Lock size={14} /> Sign in to view
-              </Link>
-            </div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-100 text-blue-600 rounded-full"><LinkIcon size={18}/></div>
-              <span className="text-xs font-bold text-neutral-400">ARTICLE</span>
-            </div>
-            <h3 className="font-semibold text-lg mb-2">The Future of AI</h3>
-            <p className="text-sm text-neutral-500">Link to interesting article about LLMs and memory management...</p>
-          </GlassCard>
+          {[
+            { type: "idea", title: "App Architecture V2", content: "Use Supabase for auth and vector embeddings.", color: "yellow", icon: <Lightbulb size={18}/> },
+            { type: "snippet", title: "React Server Actions", content: "Always validate formData before sending to DB.", color: "purple", icon: <Code size={18}/> },
+            { type: "article", title: "The Future of AI", content: "LLMs and memory management research.", color: "blue", icon: <LinkIcon size={18}/> }
+          ].map((demo, i) => (
+            <GlassCard key={i} className="p-6 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-neutral-100/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                <Link href="/login" className="flex items-center gap-2 text-sm font-medium bg-white px-4 py-2 rounded-full shadow-sm">
+                  <Lock size={14} /> Sign in to view
+                </Link>
+              </div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className={`p-2 bg-${demo.color}-100 text-${demo.color}-600 rounded-full`}>{demo.icon}</div>
+                <span className="text-xs font-bold text-neutral-400 uppercase">{demo.type}</span>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">{demo.title}</h3>
+              <p className="text-sm text-neutral-500">{demo.content}</p>
+            </GlassCard>
+          ))}
         </div>
       </FadeIn>
     );
   }
 
-  
-  // 1. Fetch User Data
+  // 1. Fetch filtered notes for the grid
   let query = supabase.from("notes").select("*").eq("user_id", user.id);
-  
-  // Filters
   if (filterType && filterType !== "all") query = query.eq("type", filterType);
   
-  // Sorting
   if (sortOrder === "oldest") query = query.order("created_at", { ascending: true });
   else if (sortOrder === "az") query = query.order("title", { ascending: true });
   else query = query.order("created_at", { ascending: false });
 
   const { data: notes } = await query;
-  const { data: allNotes } = await supabase.from("notes").select("type").eq("user_id", user.id);
 
-  // Stats Logic
+  // 2. Fetch all types for stats with explicit TypeScript casting
+  const { data: allNotes } = await supabase
+    .from("notes")
+    .select("type")
+    .eq("user_id", user.id) as { data: Note[] | null };
+
+  // 3. Stats Logic (Now type-safe)
   const stats = {
     total: allNotes?.length || 0,
     ideas: allNotes?.filter(n => n.type === "idea").length || 0,
@@ -158,10 +135,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const quote = getKnowledgeQuote();
 
   return (
-    // 3. Wrap User View with FadeIn
     <FadeIn className="space-y-8">
-      
-      {/* 1. HERO & QUOTE SECTION (UPDATED) */}
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -193,7 +167,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         </Link>
       </div>
 
-      {/* 2. STATS ROW */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Total", count: stats.total, icon: Activity, color: "text-blue-500" },
@@ -213,7 +186,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         ))}
       </div>
 
-      {/* 3. MEMORY SPARK */}
       {randomNote && stats.total > 3 && (
         <div className="rounded-xl border border-orange-100 bg-orange-50/50 p-6 dark:border-orange-900/30 dark:bg-orange-900/10">
           <div className="flex items-center gap-2 mb-2 text-orange-600 dark:text-orange-400">
@@ -234,7 +206,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         </div>
       )}
 
-      {/* 4. FILTERS & GRID */}
       <div className="space-y-6">
         <DashboardFilters />
 
