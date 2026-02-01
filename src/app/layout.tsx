@@ -4,7 +4,7 @@ import { Inter, Newsreader } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import QueryProvider from "@/providers/query-provider";
-import { SmoothScroll } from "@/components/ui/smooth-scroll"; // 1. Import SmoothScroll
+import SmoothScroll from "@/components/ui/smooth-scroll";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const newsreader = Newsreader({ subsets: ["latin"], variable: "--font-newsreader" });
