@@ -9,9 +9,17 @@ import {
 import Link from "next/link";
 import { FadeIn } from "@/components/ui/fade-in";
 
-// 1. Define the Note interface to resolve the TypeScript 'never' error
+/**
+ * 📝 Note Interface
+ * Explicitly defining the shape of our data prevents the "type never" 
+ * errors during the production build process.
+ */
 interface Note {
-  type: string | null;
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  created_at: string;
 }
 
 // 🎨 Styles Helper
@@ -74,56 +82,45 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 Get Started
               </button>
              </Link>
-             <Link href="/search">
-              <button className="rounded-full border border-neutral-200 px-8 py-3 font-medium text-neutral-600 hover:bg-neutral-50 transition-all dark:border-neutral-800 dark:text-neutral-300">
-                Explore Demo
-              </button>
-             </Link>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 opacity-80">
-          {[
-            { type: "idea", title: "App Architecture V2", content: "Use Supabase for auth and vector embeddings.", color: "yellow", icon: <Lightbulb size={18}/> },
-            { type: "snippet", title: "React Server Actions", content: "Always validate formData before sending to DB.", color: "purple", icon: <Code size={18}/> },
-            { type: "article", title: "The Future of AI", content: "LLMs and memory management research.", color: "blue", icon: <LinkIcon size={18}/> }
-          ].map((demo, i) => (
-            <GlassCard key={i} className="p-6 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-neutral-100/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                <Link href="/login" className="flex items-center gap-2 text-sm font-medium bg-white px-4 py-2 rounded-full shadow-sm">
-                  <Lock size={14} /> Sign in to view
-                </Link>
-              </div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className={`p-2 bg-${demo.color}-100 text-${demo.color}-600 rounded-full`}>{demo.icon}</div>
-                <span className="text-xs font-bold text-neutral-400 uppercase">{demo.type}</span>
-              </div>
-              <h3 className="font-semibold text-lg mb-2">{demo.title}</h3>
-              <p className="text-sm text-neutral-500">{demo.content}</p>
-            </GlassCard>
-          ))}
+          <GlassCard className="p-6 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-neutral-100/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <Link href="/login" className="flex items-center gap-2 text-sm font-medium bg-white px-4 py-2 rounded-full shadow-sm">
+                <Lock size={14} /> Sign in to view
+              </Link>
+            </div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-yellow-100 text-yellow-600 rounded-full"><Lightbulb size={18}/></div>
+              <span className="text-xs font-bold text-neutral-400">IDEA</span>
+            </div>
+            <h3 className="font-semibold text-lg mb-2">App Architecture V2</h3>
+            <p className="text-sm text-neutral-500">Semantic recall using 768-dim embeddings.</p>
+          </GlassCard>
         </div>
       </FadeIn>
     );
   }
 
-  // 1. Fetch filtered notes for the grid
-  let query = supabase.from("notes").select("*").eq("user_id", user.id);
+  // 1. Build Query with Type Casting to prevent 'never' errors
+  let query = supabase.from("notes").select("id, title, content, type, created_at").eq("user_id", user.id);
+  
   if (filterType && filterType !== "all") query = query.eq("type", filterType);
   
   if (sortOrder === "oldest") query = query.order("created_at", { ascending: true });
   else if (sortOrder === "az") query = query.order("title", { ascending: true });
   else query = query.order("created_at", { ascending: false });
 
-  const { data: notes } = await query;
-
-  // 2. Fetch all types for stats with explicit TypeScript casting
+  // Cast both queries to our Note interface
+  const { data: notes } = await query as { data: Note[] | null };
   const { data: allNotes } = await supabase
     .from("notes")
     .select("type")
     .eq("user_id", user.id) as { data: Note[] | null };
 
-  // 3. Stats Logic (Now type-safe)
+  // 2. Stats Logic
   const stats = {
     total: allNotes?.length || 0,
     ideas: allNotes?.filter(n => n.type === "idea").length || 0,
@@ -146,27 +143,22 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
               System Online
             </span>
           </div>
-          
-          <h1 className="text-4xl font-light tracking-tight text-neutral-900 dark:text-white">
-            Second Brain
-          </h1>
-          
+          <h1 className="text-4xl font-light tracking-tight text-neutral-900 dark:text-white">Second Brain</h1>
           <div className="mt-3 flex items-start gap-2 max-w-lg">
             <Quote size={16} className="text-neutral-400 mt-1 shrink-0" />
-            <p className="text-neutral-500 italic dark:text-neutral-400">
-              "{quote}"
-            </p>
+            <p className="text-neutral-500 italic dark:text-neutral-400">"{quote}"</p>
           </div>
         </div>
 
         <Link href="/notes/new">
-          <button className="flex items-center gap-2 rounded-full bg-neutral-900 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-neutral-800 hover:scale-105 hover:shadow-lg dark:bg-white dark:text-black dark:hover:bg-neutral-200">
+          <button className="flex items-center gap-2 rounded-full bg-neutral-900 px-6 py-3 text-sm font-medium text-white transition-all hover:scale-105 dark:bg-white dark:text-black">
             <Sparkles size={16} />
             <span>New Signal</span> 
           </button>
         </Link>
       </div>
 
+      {/* Stats Section */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Total", count: stats.total, icon: Activity, color: "text-blue-500" },
@@ -186,6 +178,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         ))}
       </div>
 
+      {/* Memory Spark (Type Safe Access) */}
       {randomNote && stats.total > 3 && (
         <div className="rounded-xl border border-orange-100 bg-orange-50/50 p-6 dark:border-orange-900/30 dark:bg-orange-900/10">
           <div className="flex items-center gap-2 mb-2 text-orange-600 dark:text-orange-400">
@@ -206,22 +199,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         </div>
       )}
 
+      {/* Filters & Grid */}
       <div className="space-y-6">
         <DashboardFilters />
-
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {notes?.length === 0 && (
-            <div className="col-span-full flex flex-col items-center justify-center py-20 text-center opacity-60">
-              <div className="mb-4 rounded-full bg-neutral-100 p-6 dark:bg-neutral-800">
-                <Ghost size={48} className="text-neutral-400" />
-              </div>
-              <h3 className="text-lg font-medium text-neutral-900 dark:text-white">Your brain is empty</h3>
-              <p className="max-w-xs text-sm text-neutral-500">
-                Start by capturing a note, code snippet, or brilliant idea.
-              </p>
-            </div>
-          )}
-
           {notes?.map((note) => {
             const style = getTypeStyles(note.type);
             return (
