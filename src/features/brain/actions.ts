@@ -3,11 +3,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { generateEmbedding, generateAnswer } from "@/lib/gemini";
 
-/**
- * 🧠 Ask Brain (RAG Implementation)
- * This server action performs a vector search on Supabase and 
- * uses Gemini to answer questions based on your personal notes.
- */
+// 1. Define the search result interface
+interface MatchNoteResult {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  similarity: number;
+}
+
 export async function askBrain(query: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -15,35 +19,31 @@ export async function askBrain(query: string) {
   if (!user) return "Please log in to ask questions.";
 
   try {
-    // 1. Generate embedding for the user's query (768-dim)
     const queryEmbedding = await generateEmbedding(query);
 
-    // 2. Search Supabase for similar notes using the SQL function
-    // ✅ 'as any' cast bypasses the Supabase type mismatch during build
+    // 2. Cast the RPC response to our new interface
     const { data: matchedNotes, error } = await supabase.rpc("match_notes", {
       query_embedding: queryEmbedding,
-      match_threshold: 0.5, // Similarity threshold (0 to 1)
-      match_count: 5,       // Retrieve top 5 most relevant notes
+      match_threshold: 0.5,
+      match_count: 5,
       user_id_input: user.id
-    } as any);
+    } as any) as { data: MatchNoteResult[] | null }; // 👈 Add this type cast
 
     if (error) {
       console.error("Vector Search Error:", error);
       return "I had trouble accessing your memory bank.";
     }
 
+    // 3. This will now pass TypeScript validation
     if (!matchedNotes || matchedNotes.length === 0) {
       return "I couldn't find any relevant notes in your brain to answer that.";
     }
 
-    // 3. Prepare Context for Gemini (RAG pattern)
     const contextText = matchedNotes
-      .map((note: any) => `Note: ${note.content}`)
+      .map((note) => `Note: ${note.content}`)
       .join("\n\n");
 
-    // 4. Generate Answer using the Gemini model
     const answer = await generateAnswer(query, contextText);
-    
     return answer;
 
   } catch (error) {
