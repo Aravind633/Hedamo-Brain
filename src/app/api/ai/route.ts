@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { generateNoteMetadata } from "@/features/brain/services/gemini";
+// import { generateNoteMetadata } from "@/features/brain/services/gemini";
+import { generateNoteMetadata } from "@/lib/gemini";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
