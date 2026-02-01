@@ -3,21 +3,15 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-/**
- * 🧠 Helper: Safely parse vector and calculate Cosine Similarity
- * Supabase/pgvector often returns embeddings as strings "[0.1, 0.2...]" 
- * rather than native JS arrays. This helper ensures they are parsed before reduction.
- */
+
 function cosineSimilarity(vecA: any, vecB: any) {
-  // 1. Convert string representation to actual numeric arrays if necessary
+
   const a = typeof vecA === 'string' ? JSON.parse(vecA) : vecA;
   const b = typeof vecB === 'string' ? JSON.parse(vecB) : vecB;
 
-  // 2. Safety check to prevent .reduce errors if data is missing
   if (!Array.isArray(a) || !Array.isArray(b)) return 0;
 
-  // 3. Calculate Dot Product
-  // Gemini embeddings are typically normalized, so dot product equals cosine similarity.
+
   const dotProduct = a.reduce((sum, val, i) => sum + val * (b[i] || 0), 0);
   
   return dotProduct;
@@ -44,15 +38,10 @@ export async function getGraphData() {
   const nodes = [];
   const edges = [];
   
-  /**
-   * 📈 Similarity Threshold
-   * 0.65 is usually a "sweet spot" for Gemini 768-dim embeddings.
-   * Increase this (e.g., 0.8) for fewer, stronger links.
-   * Decrease this (e.g., 0.5) for a more dense, messy brain map.
-   */
+
   const threshold = 0.65; 
 
-  // 2. Build Nodes for React Flow
+  // Build Nodes for React Flow
   nodes.push(
     ...notes.map((note) => ({
       id: note.id,
@@ -64,8 +53,7 @@ export async function getGraphData() {
     }))
   );
 
-  // 3. Build Edges (Compare every note to every other note)
-  // O(N^2) complexity: perfectly fine for the small-to-medium datasets expected in a take-home.
+
   for (let i = 0; i < notes.length; i++) {
     for (let j = i + 1; j < notes.length; j++) {
       const noteA = notes[i];

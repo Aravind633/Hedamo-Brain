@@ -1,9 +1,4 @@
-// export const config = {
-//   // We exclude "/" (root) from the matcher so it stays public
-//   matcher: [
-//     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-//   ],
-// };
+
 
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";

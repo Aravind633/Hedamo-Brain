@@ -2,11 +2,10 @@ import { createClient } from "@supabase/supabase-js";
 import { generateEmbedding, generateAnswer } from "@/lib/gemini";
 import { NextResponse } from "next/server";
 
-// Create a Supabase client with the SERVICE_ROLE key to bypass RLS (Row Level Security)
-// This is necessary because public API callers won't have a user session cookie.
+
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // You need to add this to .env
+  process.env.SUPABASE_SERVICE_ROLE_KEY! 
 );
 
 export async function GET(request: Request) {
@@ -24,8 +23,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("query");
   
-  // 2. Determine Target User (UPDATED)
-  // If 'userId' is provided in URL, use it. Otherwise, default to your specific ID.
+
   const targetUserId = searchParams.get("userId") || "b7f9b9f5-77d3-44a5-8195-088548eff91f";
 
   if (!query) {
