@@ -1,7 +1,8 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server";
-import { generateNoteMetadata, generateEmbedding } from "@/lib/gemini"; // Import new functions
+// ✅ Make sure it points to the 'lib' version
+import { generateNoteMetadata, generateEmbedding } from "@/lib/gemini";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 

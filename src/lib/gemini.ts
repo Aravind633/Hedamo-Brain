@@ -1,56 +1,37 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+if (!apiKey) throw new Error("Missing API Key");
 
-// 1. Generate Embedding (Vector) for Search
+const genAI = new GoogleGenerativeAI(apiKey);
+
+// ADD THIS LOG TO VERIFY
+console.log("DEBUG: Using gemini.ts from src/lib/");
+
+// Use 'gemini-pro' as it's the most stable for v1beta
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+
+// Embedding model for vector search
+const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+
 export async function generateEmbedding(text: string) {
-  const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
-  const result = await model.embedContent(text);
+  const result = await embeddingModel.embedContent(text);
   return result.embedding.values;
 }
 
-// 2. Generate Summary & Tags
 export async function generateNoteMetadata(content: string) {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  
-  const prompt = `
-    Analyze this note content: "${content.substring(0, 1000)}..."
-    
-    Return a JSON object with:
-    1. "summary": A concise 1-sentence summary.
-    2. "tags": An array of 3-5 relevant short tags (lowercase).
-    
-    Output strictly valid JSON.
-  `;
+  const prompt = `Analyze this note and return JSON: { "title": "...", "type": "idea|snippet|article|journal", "tags": [], "summary": "..." } \n\n Content: ${content}`;
 
+  // This is line 26 in the error trace
   const result = await model.generateContent(prompt);
   const response = result.response.text();
   
-  try {
-    // Clean up markdown formatting if Gemini adds it
-    const cleanJson = response.replace(/```json|```/g, "").trim();
-    return JSON.parse(cleanJson);
-  } catch (e) {
-    console.error("AI Parse Error:", e);
-    return { summary: "No summary available", tags: [] };
-  }
+  const cleanedResponse = response.replace(/```json/g, "").replace(/```/g, "").trim();
+  return JSON.parse(cleanedResponse);
 }
 
-// 3. RAG Chat (Ask Questions)
 export async function generateAnswer(query: string, context: string) {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  
-  const prompt = `
-    You are a helpful "Second Brain" assistant. Answer the user's question based ONLY on the provided context notes.
-    
-    Context Notes:
-    ${context}
-    
-    User Question: ${query}
-    
-    Answer concisely. If the context doesn't have the answer, say "I don't have that information in your brain yet."
-  `;
-
+  const prompt = `Context: ${context} \n\n Question: ${query}`;
   const result = await model.generateContent(prompt);
   return result.response.text();
 }

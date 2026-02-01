@@ -1,11 +1,13 @@
 
+
+
 // import { createClient } from "@/lib/supabase/server";
 // import { GlassCard } from "@/components/ui/glass-card";
 // import { DashboardFilters } from "@/components/dashboard/dashboard-filters";
 // import { formatDate } from "@/lib/utils";
 // import { 
 //   FileText, Lightbulb, Code, Link as LinkIcon, ExternalLink, 
-//   Sparkles, Ghost, Brain, Activity, Zap, LogIn, Lock 
+//   Sparkles, Ghost, Brain, Activity, Zap, LogIn, Lock, Quote 
 // } from "lucide-react";
 // import Link from "next/link";
 
@@ -19,12 +21,16 @@
 //   }
 // }
 
-// // 🕒 Time Helper
-// function getGreeting() {
-//   const hour = new Date().getHours();
-//   if (hour < 12) return "Good Morning";
-//   if (hour < 18) return "Good Afternoon";
-//   return "Good Evening";
+// // 🧠 Random Quote Generator
+// function getKnowledgeQuote() {
+//   const quotes = [
+//     "Your mind is for having ideas, not holding them.",
+//     "Knowledge is the compound interest of curiosity.",
+//     "Organize your thoughts, and your life will follow.",
+//     "Capture everything. Regret nothing.",
+//     "A wealth of information creates a poverty of attention."
+//   ];
+//   return quotes[Math.floor(Math.random() * quotes.length)];
 // }
 
 // export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ type?: string; sort?: string }> }) {
@@ -81,7 +87,6 @@
 
 //         {/* Demo Grid (Locked State) */}
 //         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 opacity-80">
-//           {/* Demo Card 1 */}
 //           <GlassCard className="p-6 relative overflow-hidden group">
 //             <div className="absolute inset-0 bg-neutral-100/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
 //               <Link href="/login" className="flex items-center gap-2 text-sm font-medium bg-white px-4 py-2 rounded-full shadow-sm">
@@ -96,7 +101,6 @@
 //             <p className="text-sm text-neutral-500">Use Supabase for auth and vector embeddings for AI recall...</p>
 //           </GlassCard>
 
-//           {/* Demo Card 2 */}
 //           <GlassCard className="p-6 relative overflow-hidden group">
 //              <div className="absolute inset-0 bg-neutral-100/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
 //               <Link href="/login" className="flex items-center gap-2 text-sm font-medium bg-white px-4 py-2 rounded-full shadow-sm">
@@ -111,7 +115,6 @@
 //             <p className="text-sm text-neutral-500">Always validate formData before sending to DB. Code example included.</p>
 //           </GlassCard>
 
-//           {/* Demo Card 3 */}
 //            <GlassCard className="p-6 relative overflow-hidden group">
 //              <div className="absolute inset-0 bg-neutral-100/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
 //               <Link href="/login" className="flex items-center gap-2 text-sm font-medium bg-white px-4 py-2 rounded-full shadow-sm">
@@ -157,11 +160,12 @@
 //   };
 
 //   const randomNote = notes && notes.length > 0 ? notes[Math.floor(Math.random() * notes.length)] : null;
+//   const quote = getKnowledgeQuote();
 
 //   return (
 //     <div className="space-y-8 animate-in fade-in duration-700">
       
-//       {/* 1. HERO & GREETING */}
+//       {/* 1. HERO & QUOTE SECTION (UPDATED) */}
 //       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
 //         <div>
 //           <div className="flex items-center gap-2 mb-2">
@@ -169,15 +173,21 @@
 //               <Brain size={16} />
 //             </div>
 //             <span className="text-sm font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-//               Cortex OS v1.0
+//               System Online
 //             </span>
 //           </div>
+          
+//           {/* CHANGED FROM "Command Center" TO "Second Brain" */}
 //           <h1 className="text-4xl font-light tracking-tight text-neutral-900 dark:text-white">
-//             {getGreeting()}.
+//             Second Brain
 //           </h1>
-//           <p className="mt-2 text-neutral-500 dark:text-neutral-400 max-w-lg">
-//              You have captured <strong>{stats.total}</strong> signals in your brain.
-//           </p>
+          
+//           <div className="mt-3 flex items-start gap-2 max-w-lg">
+//             <Quote size={16} className="text-neutral-400 mt-1 shrink-0" />
+//             <p className="text-neutral-500 italic dark:text-neutral-400">
+//               "{quote}"
+//             </p>
+//           </div>
 //         </div>
 
 //         <Link href="/notes/new">
@@ -270,8 +280,6 @@
 // }
 
 
-
-
 import { createClient } from "@/lib/supabase/server";
 import { GlassCard } from "@/components/ui/glass-card";
 import { DashboardFilters } from "@/components/dashboard/dashboard-filters";
@@ -281,6 +289,7 @@ import {
   Sparkles, Ghost, Brain, Activity, Zap, LogIn, Lock, Quote 
 } from "lucide-react";
 import Link from "next/link";
+import { FadeIn } from "@/components/ui/fade-in"; // 1. Import the wrapper
 
 // 🎨 Styles Helper
 function getTypeStyles(type: string) {
@@ -317,7 +326,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   // ------------------------------------------------------------------
   if (!user) {
     return (
-      <div className="space-y-12 animate-in fade-in duration-700">
+      // 2. Wrap Guest View with FadeIn
+      <FadeIn className="space-y-12">
         
         {/* Top Header for Guests */}
         <div className="flex items-center justify-between">
@@ -400,7 +410,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             <p className="text-sm text-neutral-500">Link to interesting article about LLMs and memory management...</p>
           </GlassCard>
         </div>
-      </div>
+      </FadeIn>
     );
   }
 
@@ -434,7 +444,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const quote = getKnowledgeQuote();
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    // 3. Wrap User View with FadeIn
+    <FadeIn className="space-y-8">
       
       {/* 1. HERO & QUOTE SECTION (UPDATED) */}
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -448,7 +459,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             </span>
           </div>
           
-          {/* CHANGED FROM "Command Center" TO "Second Brain" */}
           <h1 className="text-4xl font-light tracking-tight text-neutral-900 dark:text-white">
             Second Brain
           </h1>
@@ -546,6 +556,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           })}
         </div>
       </div>
-    </div>
+    </FadeIn>
   );
 }
