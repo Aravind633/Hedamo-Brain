@@ -71,5 +71,6 @@ export async function deleteNote(noteId: string) {
     throw new Error("Failed to delete note.");
   }
 
-  revalidatePath("/dashboard");
+  // revalidatePath("/dashboard");
+  redirect("/");
 }
