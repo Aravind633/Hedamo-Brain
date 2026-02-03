@@ -30,7 +30,7 @@ export async function createNote(formData: FormData) {
     const embedding = await generateEmbedding(content);
 
     // 3. Insert into Supabase
-    // 🔴 THE FIX: Cast the object to 'any' to bypass the "type never" error
+    // ✅ FIX: Cast to 'any' to bypass Supabase type errors during build
     const { error } = await supabase.from("notes").insert({
       user_id: user.id,
       content: content,
@@ -49,11 +49,11 @@ export async function createNote(formData: FormData) {
 
   } catch (error) {
     console.error("Create Note Error:", error);
-    // In production, you might want to return this error to the UI 
-    // rather than throwing, but for now this keeps the logic simple.
     throw error;
   }
 
+  // ✅ CRITICAL FIX: This aligns with Option 2 (Professional Structure)
+  // This expects your dashboard page to be at: src/app/(dashboard)/dashboard/page.tsx
   revalidatePath("/dashboard");
   redirect("/dashboard");
 }
@@ -71,6 +71,6 @@ export async function deleteNote(noteId: string) {
     throw new Error("Failed to delete note.");
   }
 
-  // revalidatePath("/dashboard");
-  redirect("/");
+  // ✅ Keep this consistent with the createNote path
+  revalidatePath("/dashboard");
 }
